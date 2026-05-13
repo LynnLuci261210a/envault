@@ -60,11 +60,23 @@ def fire_hook(vault_dir: Path, event: str, *, silent: bool = False) -> bool:
         The event name to fire.
     silent:
         If True, swallow HookError and return False instead of raising.
+
+    Returns
+    -------
+    bool
+        ``True`` if the hook ran successfully (or no hook was configured),
+        ``False`` if *silent* is True and a HookError was encountered.
+
+    Raises
+    ------
+    HookError
+        If the hook fails and *silent* is False.
     """
     try:
         run_hook(vault_dir, event)
         return True
     except HookError as exc:
         if silent:
+            click.echo(f"Warning: hook '{event}' failed: {exc}", err=True)
             return False
         raise
