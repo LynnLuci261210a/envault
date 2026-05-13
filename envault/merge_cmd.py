@@ -42,12 +42,27 @@ def merge_run(
     if not versions:
         raise click.ClickException(f"No versions found for vault '{vault_name}'.")
 
+    available = {v["version"] for v in versions}
+
+    def _validate_version(v: int, label: str) -> None:
+        """Raise ClickException if version *v* does not exist in the vault."""
+        if v not in available:
+            raise click.ClickException(
+                f"{label} version {v} does not exist for vault '{vault_name}'. "
+                f"Available versions: {sorted(available)}"
+            )
+
     def _load_version(v: int) -> str:
         data = load_vault(vault_name, v)
         return decrypt(data["ciphertext"], key)
 
+    base_v = version_base if version_base is not None else versions[0]["version"]
+
+    _validate_version(base_v, "Base")
+    _validate_version(version_ours, "Ours")
+    _validate_version(version_theirs, "Theirs")
+
     try:
-        base_v = version_base if version_base is not None else versions[0]["version"]
         base_text = _load_version(base_v)
         ours_text = _load_version(version_ours)
         theirs_text = _load_version(version_theirs)
