@@ -88,3 +88,14 @@ def test_save_vault_with_passphrase(tmp_path):
     save_vault("secure", SAMPLE_ENV, key_path, vault_dir=vault_dir, passphrase="mypass")
     result = load_vault("secure", key_path, vault_dir=vault_dir, passphrase="mypass")
     assert result == SAMPLE_ENV
+
+
+def test_save_vault_overwrites_existing(tmp_vault_setup):
+    """Saving a vault with the same name should overwrite the previous version."""
+    key_path, vault_dir = tmp_vault_setup
+    updated_env = "DB_HOST=remotehost\nDB_PORT=5432\n"
+    save_vault("overwrite", SAMPLE_ENV, key_path, vault_dir=vault_dir)
+    save_vault("overwrite", updated_env, key_path, vault_dir=vault_dir)
+    result = load_vault("overwrite", key_path, vault_dir=vault_dir)
+    assert result == updated_env
+    assert len(list_vaults(vault_dir=vault_dir)) == 1
