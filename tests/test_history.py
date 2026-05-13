@@ -86,3 +86,13 @@ def test_delete_history_removes_file(tmp_history):
 
 def test_delete_history_nonexistent_returns_false():
     assert hist.delete_history("ghost") is False
+
+
+def test_record_version_isolated_per_app():
+    """Versions for different apps are tracked independently."""
+    hist.record_version("app1", "aabbcc")
+    hist.record_version("app1", "ddeeff")
+    v = hist.record_version("app2", "112233")
+    assert v == 1
+    assert len(hist.list_versions("app1")) == 2
+    assert len(hist.list_versions("app2")) == 1
